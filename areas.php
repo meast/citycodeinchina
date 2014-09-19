@@ -12,6 +12,7 @@ class areas extends Orm_Base
         'cityname' => array('type' => 'int', 'comment' => '城市名称'),
         'citycode' => array('type' => 'int', 'comment' => '城市编号'),
         'parentid' => array('type' => 'int', 'comment' => '父级编号'),
+        'nodelevel' => array('type' => 'int', 'comment' => '层次深度'),
         'nodepath' => array('type' => 'text', 'comment' => '层次序列'),
         'citycate' => array('type' => 'text', 'comment' => '城市分类'),
     );

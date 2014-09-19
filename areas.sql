@@ -23,6 +23,7 @@ CREATE TABLE "areas" (
 "cityname"  TEXT,
 "citycode"  INTEGER,
 "parentid"  INTEGER,
+"nodelevel"  INTEGER,
 "nodepath"  TEXT,
 "citycate"  TEXT
 );

@@ -96,6 +96,7 @@ function getcodes1($file)
         }
         
         $mar = preg_match_all($pattern, $str1, $matches, PREG_SET_ORDER);
+        $nodelv = 1;
         if($mar)
         {
             foreach($matches as $k => $v)
@@ -113,28 +114,32 @@ function getcodes1($file)
                     switch(strlen($p['filename']))
                     {
                         case 9:
-                            # 村委 社区
-                            $v['nodepath'] = '0,' . formatcitycode($p3['filename']) . ',' . formatcitycode($p2['filename']) . ',' . formatcitycode($p1['filename']) . ',' . formatcitycode($p['filename']);
+                            # 镇街文件,读取村委社区数据
+                            $nodelv = 5;
+                            $v['nodepath'] = '0,' . formatcitycode($p3['filename'], 1) . ',' . formatcitycode($p2['filename'], 2) . ',' . formatcitycode($p1['filename'], 3) . ',' . formatcitycode($p['filename'], 4);
                         case 6:
-                            # 镇街
-                            $v['nodepath'] = '0,' . formatcitycode($p2['filename']) . ',' . formatcitycode($p1['filename']) . ',' . formatcitycode($p['filename']);
+                            # 县区文件,读取镇街数据
+                            $nodelv = 4;
+                            $v['nodepath'] = '0,' . formatcitycode($p2['filename'], 1) . ',' . formatcitycode($p1['filename'], 2) . ',' . formatcitycode($p['filename'], 3);
                             break;
                         case 4:
-                            # 县区
-                            $v['nodepath'] = '0,' . formatcitycode($p1['filename']) . ',' . formatcitycode($p['filename']);
+                            # 地级市文件,读取县区数据
+                            $nodelv = 3;
+                            $v['nodepath'] = '0,' . formatcitycode($p1['filename'], 1) . ',' . formatcitycode($p['filename'], 2);
                             break;
                         case 2:
-                            # 地级市,节点为 0,省级编号
-                            $v['nodepath'] = '0,' . formatcitycode($p['filename']);
+                            # 省级文件,读取地级市数据
+                            $nodelv = 2;
+                            $v['nodepath'] = '0,' . formatcitycode($p['filename'], 1);
                             break;
                         default:
                             break;
                     }
                 }
-                $v['citycode'] = formatcitycode($v['citycode']);
+                $v['citycode'] = formatcitycode($v['citycode'], $nodelv);
                 if($v['parentid'] > 0)
-                    $v['parentid'] = formatcitycode($v['parentid']);
-                
+                    $v['parentid'] = formatcitycode($v['parentid'], ($nodelv - 1));
+                $v['nodelevel'] = $nodelv;
                 $areas = new areas();
                 $c = $areas -> where('citycode=' . $v['citycode']) -> fOne('count(*)');
                 if($c == 0)
@@ -153,11 +158,22 @@ function getcodes1($file)
     }
 }
 
-function formatcitycode($citycode)
+function formatcitycode($citycode, $nodelv = 1)
 {
-    if(strlen($citycode) < 6)
+    if($nodelv < 4)
     {
-        return str_pad($citycode, 6, '0', STR_PAD_RIGHT);
+        if(strlen($citycode) <= 6)
+        {
+            return str_pad($citycode, 6, '0', STR_PAD_RIGHT);
+        }else{
+            return substr($citycode, 0, 6);
+        }
+    }else{
+        if(strlen($citycode) <= 12)
+        {
+            return str_pad($citycode, 12, '0', STR_PAD_RIGHT);
+        }
     }
+    
     return $citycode;
 }
