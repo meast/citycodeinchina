@@ -114,21 +114,17 @@ function getcodes1($file)
                     {
                         case 9:
                             # 村委 社区
-                            $v['citycode'] = substr($v['citycode'], 0, 12);
                             $v['nodepath'] = '0,' . formatcitycode($p3['filename']) . ',' . formatcitycode($p2['filename']) . ',' . formatcitycode($p1['filename']) . ',' . formatcitycode($p['filename']);
                         case 6:
                             # 镇街
-                            $v['citycode'] = substr($v['citycode'], 0, 9);
                             $v['nodepath'] = '0,' . formatcitycode($p2['filename']) . ',' . formatcitycode($p1['filename']) . ',' . formatcitycode($p['filename']);
                             break;
                         case 4:
                             # 县区
-                            $v['citycode'] = substr($v['citycode'], 0, 6);
                             $v['nodepath'] = '0,' . formatcitycode($p1['filename']) . ',' . formatcitycode($p['filename']);
                             break;
                         case 2:
                             # 地级市,节点为 0,省级编号
-                            $v['citycode'] = substr($v['citycode'], 0, 4);
                             $v['nodepath'] = '0,' . formatcitycode($p['filename']);
                             break;
                         default:
@@ -136,7 +132,9 @@ function getcodes1($file)
                     }
                 }
                 $v['citycode'] = formatcitycode($v['citycode']);
-                if($v['parentid'] > 0) $v['parentid'] = formatcitycode($v['parentid']);
+                if($v['parentid'] > 0)
+                    $v['parentid'] = formatcitycode($v['parentid']);
+                
                 $areas = new areas();
                 $c = $areas -> where('citycode=' . $v['citycode']) -> fOne('count(*)');
                 if($c == 0)
