@@ -107,35 +107,29 @@ function getcodes1($file)
                     $v['nodepath'] = '0';
                 }else{
                     $v['parentid'] = $p['filename'];
-                    $p1 = pathinfo($p['dirname']);
-                    $p2 = pathinfo($p1['dirname']);
-                    $p3 = pathinfo($p2['dirname']);
-                    $p4 = pathinfo($p3['dirname']);
                     switch(strlen($p['filename']))
                     {
                         case 9:
                             # 镇街文件,读取村委社区数据
                             $nodelv = 5;
-                            $v['nodepath'] = '0,' . formatcitycode($p3['filename'], 1) . ',' . formatcitycode($p2['filename'], 2) . ',' . formatcitycode($p1['filename'], 3) . ',' . formatcitycode($p['filename'], 4);
+                            break;
                         case 6:
                             # 县区文件,读取镇街数据
                             $nodelv = 4;
-                            $v['nodepath'] = '0,' . formatcitycode($p2['filename'], 1) . ',' . formatcitycode($p1['filename'], 2) . ',' . formatcitycode($p['filename'], 3);
                             break;
                         case 4:
                             # 地级市文件,读取县区数据
                             $nodelv = 3;
-                            $v['nodepath'] = '0,' . formatcitycode($p1['filename'], 1) . ',' . formatcitycode($p['filename'], 2);
                             break;
                         case 2:
                             # 省级文件,读取地级市数据
                             $nodelv = 2;
-                            $v['nodepath'] = '0,' . formatcitycode($p['filename'], 1);
                             break;
                         default:
                             break;
                     }
                 }
+                $v['nodepath'] = getnodepath($v['citycode'], $nodelv);
                 $v['citycode'] = formatcitycode($v['citycode'], $nodelv);
                 if($v['parentid'] > 0)
                     $v['parentid'] = formatcitycode($v['parentid'], ($nodelv - 1));
@@ -174,6 +168,39 @@ function formatcitycode($citycode, $nodelv = 1)
             return str_pad($citycode, 12, '0', STR_PAD_RIGHT);
         }
     }
-    
     return $citycode;
+}
+
+
+function getnodepath($citycode, $nodelv)
+{
+    if($nodelv > 1)
+    {
+        $nodepath = '';
+        switch($nodelv)
+        {
+            case 5:
+                # 村委社区
+                $nodepath = '0,' . substr($citycode, 0, 2) . '0000,' . substr($citycode, 0, 4) . '00,' . substr($citycode, 0, 6) . ',' . substr($citycode, 0, 9) . '000';
+                break;
+            case 4:
+                # 镇街
+                $nodepath = '0,' . substr($citycode, 0, 2) . '0000,' . substr($citycode, 0, 4) . '00,' . substr($citycode, 0, 6);
+                break;
+            case 3:
+                # 县区
+                $nodepath = '0,' . substr($citycode, 0, 2) . '0000,' . substr($citycode, 0, 4) . '00';
+                break;
+            case 2:
+                # 地级市
+                $nodepath = '0,' . substr($citycode, 0, 2) . '0000';
+                break;
+            default:
+                break;
+        }
+        return $nodepath;
+    }else{
+        # nodelevel=1,means province.
+        return 0;
+    }
 }
