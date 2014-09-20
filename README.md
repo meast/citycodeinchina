@@ -9,3 +9,7 @@ step:
   3. download all the pages : wget -r -c -np -L -P ./2013 http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2013/index.html
   4. move the downloaded pages : mv ./2013/www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2013/* ./2013/
   5. get datas from pages : php getdata.php
+  
+table:
+    areas (itemid,cityname,citycode,parentid,nodelevel,nodepath,citycate)
+    

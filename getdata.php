@@ -7,7 +7,7 @@
         1. Rec. download datas from http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2013/index.html by using wget
             wget -r -c -np -L http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2013/index.html
         2. mv all files in download directory include child directory and files to directory 2013 in current directory.
-        3. create database and table: areas (itemid,cityname,citycode,parentid,nodepath,citycate).
+        3. create database and table: areas (itemid,cityname,citycode,parentid,nodelevel,nodepath,citycate).
         4. modify the value of $dbconf in this file.(using pdo).
         5. run this program to save datas into database.
     @requirement:
