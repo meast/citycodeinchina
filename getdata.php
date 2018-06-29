@@ -29,19 +29,20 @@ $dbconf = array('default' =>
 );
 areas::$dbconf = $dbconf;
 
+$datadir = __DIR__ . '/2017';
 
 # 省份文件
-$f1 = __DIR__ . '/2013/index.html';
+$f1 = $datadir . '/index.html';
 getcodes1($f1);
 
-$arr2 = glob(__DIR__ . '/2013/*.html');
-$arr3 = glob(__DIR__ . '/2013/*/*.html');
-$arr4 = glob(__DIR__ . '/2013/*/*/*.html');
-$arr5 = glob(__DIR__ . '/2013/*/*/*/*.html');
+$arr2 = glob($datadir . '/*.html');
+$arr3 = glob($datadir . '/*/*.html');
+$arr4 = glob($datadir . '/*/*/*.html');
+$arr5 = glob($datadir . '/*/*/*/*.html');
 
 foreach($arr2 as $k => $v)
 {
-    if($v != __DIR__ . '/2013/index.html')
+    if($v != $datadir . '/index.html')
     {
         getcodes1($v);
     }
@@ -49,7 +50,7 @@ foreach($arr2 as $k => $v)
 
 foreach($arr3 as $k => $v)
 {
-    if($v != __DIR__ . '/2013/index.html')
+    if($v != $datadir . '/index.html')
     {
         getcodes1($v);
     }
@@ -57,7 +58,7 @@ foreach($arr3 as $k => $v)
 
 foreach($arr4 as $k => $v)
 {
-    if($v != __DIR__ . '/2013/index.html')
+    if($v != $datadir . '/index.html')
     {
         getcodes1($v);
     }
@@ -65,7 +66,7 @@ foreach($arr4 as $k => $v)
 
 foreach($arr5 as $k => $v)
 {
-    if($v != __DIR__ . '/2013/index.html')
+    if($v != $datadir . '/index.html')
     {
         getcodes1($v);
     }
