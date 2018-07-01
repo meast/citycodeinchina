@@ -12,6 +12,15 @@
         5. run this program to save datas into database.
     @requirement:
         1. ext mbstring and pdo(and the pdo_[DB] in your config) must be loaded.
+    # 1. 省, 2. 地级市, 3. 县级市/区/直筒子镇, 4. 街道/镇, 5. 社区/村
+    # 直筒子市:
+        省, 地级市, 镇, 社区/村
+        (广东省东莞市 4419, 广东省中山市 4420, 海南省三沙市 4603, 海南省儋州市 4604, 甘肃省嘉峪关市 6202 )
+        特别处理:
+            4419,4420,4604
+        其中,
+            海南省三沙市 4603 下辖先按岛划分 符合默认规则, 不需要特殊处理 
+            甘肃省嘉峪关市 6202 有单独的一个市辖区 符合默认规则, 可以不做特殊处理
 */
 include __DIR__ . '/areas.php';
 
@@ -44,7 +53,7 @@ foreach($arr2 as $k => $v)
 {
     if($v != $datadir . '/index.html')
     {
-        getcodes1($v);
+        getcodes1($v, 1);
     }
 }
 
@@ -52,7 +61,7 @@ foreach($arr3 as $k => $v)
 {
     if($v != $datadir . '/index.html')
     {
-        getcodes1($v);
+        getcodes1($v, 2);
     }
 }
 
@@ -60,7 +69,7 @@ foreach($arr4 as $k => $v)
 {
     if($v != $datadir . '/index.html')
     {
-        getcodes1($v);
+        getcodes1($v, 3);
     }
 }
 
@@ -68,14 +77,15 @@ foreach($arr5 as $k => $v)
 {
     if($v != $datadir . '/index.html')
     {
-        getcodes1($v);
+        getcodes1($v, 4);
     }
 }
 
 
 
-function getcodes1($file)
+function getcodes1($file, $node = 0)
 {
+    $arrspecial = array('4419', '4420', '4604', '6202');
     $pattern1 = '|<a\shref=\'(?<citycode>\d+)\.html\'>(?<cityname>.+?)(<br/>)?</a>|'; # <br/> tag exists in the 2013/index.html only.
     $pattern2 = '|<tr.+?><td><a\shref=\'.+?\'>(?<citycode>\d+)</a></td><td><a\shref=\'.+?\'>(?<cityname>.+?)</a></td></tr>|';
     $pattern3 = '|<tr.+?><td>(?<citycode>\d+)</td><td>(?<citycate>\d+)</td><td>(?<cityname>.+?)</td></tr>|';
@@ -102,17 +112,28 @@ function getcodes1($file)
         {
             foreach($matches as $k => $v)
             {
+                $isspecial = false;
                 if($p['filename'] == 'index')
                 {
                     $v['parentid'] = 0;
                     $v['nodepath'] = '0';
                 }else{
                     $v['parentid'] = $p['filename'];
+                    $prefix = $p['filename'];
+                    if(strlen($p['filename']) >= 4) {
+                        $prefix = substr($p['filename'], 0, 4);
+                        if(in_array($prefix, $arrspecial)) {
+                            $isspecial = true;
+                        }
+                    }
                     switch(strlen($p['filename']))
                     {
                         case 9:
                             # 镇街文件,读取村委社区数据
                             $nodelv = 5;
+                            if($isspecial) {
+                                $nodelv = 4;
+                            }
                             break;
                         case 6:
                             # 县区文件,读取镇街数据
@@ -130,10 +151,10 @@ function getcodes1($file)
                             break;
                     }
                 }
-                $v['nodepath'] = getnodepath($v['citycode'], $nodelv);
-                $v['citycode'] = formatcitycode($v['citycode'], $nodelv);
+                $v['nodepath'] = getnodepath($v['citycode'], $nodelv, $isspecial);
+                $v['citycode'] = formatcitycode($v['citycode'], $nodelv, $isspecial);
                 if($v['parentid'] > 0)
-                    $v['parentid'] = formatcitycode($v['parentid'], ($nodelv - 1));
+                    $v['parentid'] = formatcitycode($v['parentid'], ($nodelv - 1), $isspecial);
                 $v['nodelevel'] = $nodelv;
                 $areas = new areas();
                 $c = $areas -> where('citycode=' . $v['citycode']) -> fOne('count(*)');
@@ -153,7 +174,7 @@ function getcodes1($file)
     }
 }
 
-function formatcitycode($citycode, $nodelv = 1)
+function formatcitycode($citycode, $nodelv = 1, $isspecial = false)
 {
     if($nodelv < 4)
     {
@@ -161,6 +182,13 @@ function formatcitycode($citycode, $nodelv = 1)
         {
             return str_pad($citycode, 6, '0', STR_PAD_RIGHT);
         }else{
+            if($isspecial && $nodelv >= 3) {
+                if(strlen($citycode) >= 9) {
+                    return substr($citycode, 0, 9);
+                } else {
+                    return str_pad($citycode, 9, '0', STR_PAD_RIGHT);
+                }
+            }
             return substr($citycode, 0, 6);
         }
     }else{
@@ -173,7 +201,7 @@ function formatcitycode($citycode, $nodelv = 1)
 }
 
 
-function getnodepath($citycode, $nodelv)
+function getnodepath($citycode, $nodelv, $isspecial = false)
 {
     if($nodelv > 1)
     {
@@ -185,11 +213,14 @@ function getnodepath($citycode, $nodelv)
                 $nodepath = '0,' . substr($citycode, 0, 2) . '0000,' . substr($citycode, 0, 4) . '00,' . substr($citycode, 0, 6) . ',' . substr($citycode, 0, 9) . '000';
                 break;
             case 4:
-                # 镇街
+                # 镇街/直筒子村
                 $nodepath = '0,' . substr($citycode, 0, 2) . '0000,' . substr($citycode, 0, 4) . '00,' . substr($citycode, 0, 6);
+                if($isspecial) {
+                    $nodepath = '0,' . substr($citycode, 0, 2) . '0000,' . substr($citycode, 0, 4) . '00,' . substr($citycode, 0, 9);
+                }
                 break;
             case 3:
-                # 县区
+                # 县区/直筒子镇
                 $nodepath = '0,' . substr($citycode, 0, 2) . '0000,' . substr($citycode, 0, 4) . '00';
                 break;
             case 2:
